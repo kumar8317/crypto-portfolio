@@ -2,10 +2,12 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import {
+  Bitcoin,
   Ethereum,
   ITatumSdkChain,
   Network,
   NftAddressBalance,
+  Polygon,
   TatumSDK,
 } from "@tatumio/tatum";
 
@@ -63,7 +65,7 @@ export const CryptoProvider: React.FC<{ children: ReactNode }> = ({
     setBalance("");
 
     const tatum = await getTatum();
-
+    console.log(network, "network");
     try {
       const bal = await tatum.address.getBalance({
         addresses: [address],
@@ -79,7 +81,7 @@ export const CryptoProvider: React.FC<{ children: ReactNode }> = ({
               ? bal.error.message.join(", ")
               : bal.error.message
             : "Unknown error";
-        setError(errMessage);
+        setError("Unable to fetch balance");
       } else {
         setBalance(`${bal.data[0].balance} ${bal.data[0].asset}`);
       }
@@ -101,23 +103,28 @@ export const CryptoProvider: React.FC<{ children: ReactNode }> = ({
 
     try {
       const tatum = await getTatum();
-      const nftBalance = await tatum.nft.getBalance({
-        addresses: [address],
-      });
+      //check here if tatuys i of type ethereum and poluygon and then only execute below code
+      if (tatum instanceof Ethereum || tatum instanceof Polygon) {
+        const nftBalance = await tatum.nft.getBalance({
+          addresses: [address],
+        });
 
-      if (nftBalance.data) {
-        // Transform the data to match our NFT interface
-        const transformedNfts: NFT[] = nftBalance.data.map(
-          (nft: NftAddressBalance) => ({
-            metadata: {
-              name: nft.metadata?.name || "Unnamed NFT",
-              image: nft.metadata?.image || undefined,
-            },
-          })
-        );
-        setNfts(transformedNfts);
+        if (nftBalance.data) {
+          // Transform the data to match our NFT interface
+          const transformedNfts: NFT[] = nftBalance.data.map(
+            (nft: NftAddressBalance) => ({
+              metadata: {
+                name: nft.metadata?.name || "Unnamed NFT",
+                image: nft.metadata?.image || undefined,
+              },
+            })
+          );
+          setNfts(transformedNfts);
+        } else {
+          setNftError("No NFTs found");
+        }
       } else {
-        setNftError("No NFTs found or error fetching NFTs");
+        setNftError("NFTS are not supported on this chain");
       }
 
       tatum.destroy();
@@ -130,8 +137,8 @@ export const CryptoProvider: React.FC<{ children: ReactNode }> = ({
     setNftLoading(false);
   };
 
-  const getTatum = async (): Promise<Ethereum> => {
-    const tatum = await TatumSDK.init<Ethereum>({
+  const getTatum = async (): Promise<Ethereum | Bitcoin | Polygon> => {
+    const tatum = await TatumSDK.init<Ethereum | Bitcoin | Polygon>({
       network: network,
       apiKey: process.env.NEXT_PUBLIC_TATUM_API_KEY || "",
     });

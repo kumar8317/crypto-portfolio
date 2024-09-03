@@ -11,7 +11,15 @@ interface NFTProps {
 }
 
 const NFTComponent: React.FC<NFTProps> = ({ metadata }) => {
-  const imageSrc = metadata.image || "/placeholder-image.jpg";
+  const getImageSrc = (url: string | undefined) => {
+    if (!url) return "/placeholder.jpg";
+    // Convert IPFS URL starting with ipfs:// to a gateway URL
+    if (url.startsWith("ipfs://")) {
+      return url.replace("ipfs://", "https://ipfs.io/ipfs/");
+    }
+    return url; // Return as-is if it's already a proper URL
+  };
+  const imageSrc = getImageSrc(metadata.image);
   const name = metadata.name || "Unnamed NFT";
 
   return (
