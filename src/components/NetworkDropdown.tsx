@@ -19,7 +19,7 @@ const NetworkDropdown = () => {
       value={network}
       onValueChange={(value) => setNetwork(value as Network)}
     >
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-[180px] bg-gray-100">
         <SelectValue placeholder="Select Network" />
       </SelectTrigger>
       <SelectContent>
