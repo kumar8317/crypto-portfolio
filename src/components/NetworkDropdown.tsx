@@ -12,12 +12,19 @@ import {
 import { useCryptoContext } from "@/contexts/cryptoContext";
 
 const NetworkDropdown = () => {
-  const { network, setNetwork } = useCryptoContext();
+  const { network, setNetwork, setBalance, setNfts, setAddress } =
+    useCryptoContext();
 
+  const handleChange = (value: Network) => {
+    setNetwork(value as Network);
+    setBalance("");
+    setNfts([]);
+    setAddress("");
+  };
   return (
     <Select
       value={network}
-      onValueChange={(value) => setNetwork(value as Network)}
+      onValueChange={(value) => handleChange(value as Network)}
     >
       <SelectTrigger className="w-[180px] bg-gray-100">
         <SelectValue placeholder="Select Network" />
